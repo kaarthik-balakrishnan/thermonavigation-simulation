@@ -224,13 +224,13 @@ if __name__ == '__main__':
 
     # Gradients={"F26_B18":Experiment("F26_B18",26,18,0,1464),"F32_B24":Experiment("F32_B24",32,24,0,1464)}
 
-    fish_data={}
+    simulation_data={}
     tracked_angles={}
 
     data_file = path.join(data_folder, file)
     with open(data_file, "rb") as myfile:
         print(file)
-        fish_data= pickle.load(myfile)
+        simulation_data= pickle.load(myfile)
 
 
     # Figure 5E Cold experiment Model 3 simulation example
@@ -238,7 +238,7 @@ if __name__ == '__main__':
     exp = "fishmodel_F26_B18"
     i = 3
 
-    track = fish_data[exp][i]
+    track = simulation_data[exp][i]
     track = track[::10]  ## Down sampling for easy plotting
     fig, ax = pl.subplots()
     pl.scatter(track[:, 0], track[:, 1], color='b', s=0.2, alpha=0.1, rasterized=True)
@@ -251,10 +251,31 @@ if __name__ == '__main__':
     exp = "fishmodel_F32_B24"
     i = 13
 
-    track = fish_data[exp][i]
+    track = simulation_data[exp][i]
     track = track[::10]  ## Down sampling for easy plotting
     fig, ax = pl.subplots()
     pl.scatter(track[:, 0], track[:, 1], color='r', s=0.2, alpha=0.1, rasterized=True)
     pl.axis('equal')
     pl.title(i)
     # # pl.savefig("F5E_ColdAvoidance_Model3_example.svg",dpi=600,bbox_inches='tight')
+
+    # Figure S5A Temperature stimulus presented to fish
+
+    fig, ax = pl.subplots()
+    monitor = np.loadtxt(
+        '/Users/kaarthikbalakrishnan/Library/CloudStorage/OneDrive-TheOhioStateUniversity/Desktop/Research/BehaviorExperiments/ZebraTrack/241106_Fish95_GCaMP_HB_6dpf_FlowExperiment_warner_temp_stim_Z_0.temp')
+    controller = np.loadtxt(
+        '/Users/kaarthikbalakrishnan/Library/CloudStorage/OneDrive-TheOhioStateUniversity/Desktop/Research/BehaviorExperiments/ZebraTrack/241106_Fish95_GCaMP_HB_6dpf_FlowExperiment_warner_temp_stim_Z_0.c_temp')
+    monitor_avg = [np.mean(monitor[i:i + 20]) for i in range(0, len(monitor), 20)]
+    controller_avg = [np.mean(controller[i:i + 20]) for i in range(0, len(controller), 20)]
+    ax.plot(monitor_avg, linestyle='-', color='orange', label="Monitor")
+    ax.plot(controller_avg, linestyle='--', color='k', alpha=0.5, label="Controller")
+    ax.axvline(720, linestyle='--', color='k')
+    pl.xticks(np.arange(0, 1081, 360))
+    pl.xlabel("Time [s]")
+    pl.ylabel("Temperature [C]")
+    pl.legend()
+    format_legend(ax)
+    remove_spines(ax)
+    #pl.savefig("Temperature_stim.pdf", transparent=True, format="pdf", bbox_inches="tight")
+
