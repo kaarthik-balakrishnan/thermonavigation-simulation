@@ -24,8 +24,13 @@ class Experiment:
 
 if __name__ == '__main__':
 
-    for order in range(4):
 
+    # for order in range(4):
+    for order in [False,True]:
+        if order:
+            used_model='0_order'
+        else:
+            used_model='transition'
         Filt_vals = {}
         tracked_angles = {}
 
@@ -62,8 +67,11 @@ if __name__ == '__main__':
                 boutlen = 20
                 count=0
 
-                obj = SwimBoutGenerator(
-                    "/Users/kaarthikbalakrishnan/Desktop/Research/BehaviorExperiments/ZebraTrack/sim_model_store_multi_order.hdf5", 0,0,2, order)
+                # obj = SwimBoutGenerator(
+                #     "/Users/kaarthikbalakrishnan/Desktop/Research/BehaviorExperiments/ZebraTrack/sim_model_store_multi_order.hdf5", 0,0,2, order)
+
+                #For the simpler model with just 4 parameters (t,dt,abs(dt) and t*dt)
+                obj = SwimBoutGenerator("/Users/kaarthikbalakrishnan/Desktop/Research/BehaviorExperiments/ZebraTrack/sim_model_store.hdf5", 0,0,2, order)
 
                 df_elements=[]
                 while it < 180000:
@@ -122,130 +130,140 @@ if __name__ == '__main__':
 
                 del obj
 
-        pickle_file = open(f"Fish_model_{order}.fishexp", "wb")
+        pickle_file = open(f"Fish_model_{used_model}_250618.fishexp", "wb")
         pickle.dump(Filt_vals, pickle_file)
         pickle.dump(tracked_angles, pickle_file)
         pickle_file.close()
 
-        pickle_file = open(f"Fish_model_{order}_bouts.pkl", "wb")
+        pickle_file = open(f"Fish_model_{used_model}_bouts_250618.pkl", "wb")
         pickle.dump(bout_dataframe, pickle_file)
         pickle_file.close()
 
 #"Full" experiment simulation; F32_B18
 
-order=3
 
-Filt_vals = {}
-tracked_angles = {}
+    for order in [False,True]:
+        if order:
+            used_model='0_order'
+        else:
+            used_model='transition'
 
-bout_dataframe = {}
+        Filt_vals = {}
+        tracked_angles = {}
 
-Gradients = {"F32_B18":Experiment("F32_B18", 32, 18, 0, 2562)}
+        bout_dataframe = {}
 
-for gr in Gradients:
-    Filt_vals[f"fishmodel_{Gradients[gr].name}"] = {}
-    tracked_angles[f"fishmodel_{Gradients[gr].name}"] = {}
-    bout_dataframe[f"fishmodel_{Gradients[gr].name}"] = {}
+        Gradients = {"F32_B18":Experiment("F32_B18", 32, 18, 0, 2562)}
 
-    for num in range(200):
+        # Gradients = {"F40_B10": Experiment("F40_B10", 40, 10, 0, 5490)}
 
-        start_pos = Gradients[gr].start_pos
-        end_pos = Gradients[gr].end_pos
+        for gr in Gradients:
+            Filt_vals[f"fishmodel_{Gradients[gr].name}"] = {}
+            tracked_angles[f"fishmodel_{Gradients[gr].name}"] = {}
+            bout_dataframe[f"fishmodel_{Gradients[gr].name}"] = {}
 
-        first_pos = [np.random.randint(0, 300), np.random.randint(0, end_pos)]
-        Front = Gradients[gr].front
-        Back = Gradients[gr].back
+            for num in range(200):
 
-        curr_pos = first_pos
-        curr_angle = (np.random.rand() - 0.5) * 2 * np.pi
+                start_pos = Gradients[gr].start_pos
+                end_pos = Gradients[gr].end_pos
 
-        temp = PositionToTemp(Front, Back, curr_pos[1], start_pos=start_pos, end_pos=end_pos)
-        d_temp = 0
+                first_pos = [np.random.randint(0, 300), np.random.randint(0, end_pos)]
+                Front = Gradients[gr].front
+                Back = Gradients[gr].back
 
-        grad_pos = []
-        grad_angle = []
-        it = 0
-        # bout_pos = [[-25, -40]]
-        th = []
-        dth = []
-        boutlen = 20
-        count = 0
+                curr_pos = first_pos
+                curr_angle = (np.random.rand() - 0.5) * 2 * np.pi
 
-        obj = SwimBoutGenerator(
-            "/Users/kaarthikbalakrishnan/Desktop/Research/BehaviorExperiments/ZebraTrack/sim_model_store_multi_order.hdf5",
-            0, 0, 2, order)
+                temp = PositionToTemp(Front, Back, curr_pos[1], start_pos=start_pos, end_pos=end_pos)
+                d_temp = 0
 
-        df_elements = []
-        while it < 180000:
+                grad_pos = []
+                grad_angle = []
+                it = 0
+                # bout_pos = [[-25, -40]]
+                th = []
+                dth = []
+                boutlen = 20
+                count = 0
 
-            # Pick new bout
-            next_bout = obj.draw_next_bout(temp, d_temp, force_mode_0=False)
-            ibi = int(next_bout.pre_bout_ibi_ms / 10)  ##Convert to 100 Hz for ease of simulation
-            dist = next_bout.bout_displacement_mm * 7
-            angle = np.deg2rad(next_bout.bout_angle_deg)
-            count = count + 1
+                # obj = SwimBoutGenerator(
+                #     "/Users/kaarthikbalakrishnan/Desktop/Research/BehaviorExperiments/ZebraTrack/sim_model_store_multi_order.hdf5",
+                #     0, 0, 2, order)
 
-            # Move fish to new position
-            bout_pos, bout_angle = move_virtual_fish(curr_pos, curr_angle, angle, dist, ibi, boutlen)
+                obj = SwimBoutGenerator(
+                    "/Users/kaarthikbalakrishnan/Desktop/Research/BehaviorExperiments/ZebraTrack/sim_model_store.hdf5",
+                    0, 0, 2, order)
 
-            ##Check y-direction
-            if bout_pos[-1][1] < 0:
-                bout_pos[:, 1] = np.where(bout_pos[:, 1] < 0, 0, bout_pos[:, 1])
-                bout_angle = np.where(bout_pos[:, 1] < 0, np.arctan2(0, bout_pos[-1][0] - curr_pos[0]), bout_angle)
-            elif bout_pos[-1][1] > end_pos:
-                bout_pos[:, 1] = np.where(bout_pos[:, 1] > end_pos, end_pos, bout_pos[:, 1])
-                bout_angle = np.where(bout_pos[:, 1] > end_pos, np.arctan2(0, bout_pos[-1][0] - curr_pos[0]),
-                                      bout_angle)
+                df_elements = []
+                while it < 180000:
 
-            ###Check x-direction
-            if bout_pos[-1][0] < 0:
-                bout_pos[:, 0] = np.where(bout_pos[:, 0] < 0, 0, bout_pos[:, 0])
-                bout_angle = np.where(bout_pos[:, 0] < 0, np.arctan2(bout_pos[-1][1] - curr_pos[1], 0), bout_angle)
-            elif bout_pos[-1][0] > 320:
-                bout_pos[:, 0] = np.where(bout_pos[:, 0] > 320, 320, bout_pos[:, 0])
-                bout_angle = np.where(bout_pos[:, 0] > 320, np.arctan2(bout_pos[-1][1] - curr_pos[1], 0),
-                                      bout_angle)
+                    # Pick new bout
+                    next_bout = obj.draw_next_bout(temp, d_temp, force_mode_0=False)
+                    ibi = int(next_bout.pre_bout_ibi_ms / 10)  ##Convert to 100 Hz for ease of simulation
+                    dist = next_bout.bout_displacement_mm * 7
+                    angle = np.deg2rad(next_bout.bout_angle_deg)
+                    count = count + 1
 
-            grad_pos.append(bout_pos)
-            grad_angle.append(bout_angle)
+                    # Move fish to new position
+                    bout_pos, bout_angle = move_virtual_fish(curr_pos, curr_angle, angle, dist, ibi, boutlen)
 
-            delta_xy = bout_pos[-1] - curr_pos
+                    ##Check y-direction
+                    if bout_pos[-1][1] < 0:
+                        bout_pos[:, 1] = np.where(bout_pos[:, 1] < 0, 0, bout_pos[:, 1])
+                        bout_angle = np.where(bout_pos[:, 1] < 0, np.arctan2(0, bout_pos[-1][0] - curr_pos[0]), bout_angle)
+                    elif bout_pos[-1][1] > end_pos:
+                        bout_pos[:, 1] = np.where(bout_pos[:, 1] > end_pos, end_pos, bout_pos[:, 1])
+                        bout_angle = np.where(bout_pos[:, 1] > end_pos, np.arctan2(0, bout_pos[-1][0] - curr_pos[0]),
+                                              bout_angle)
 
-            df_elements.append(
-                [next_bout.swim_mode, count, it, it + boutlen + ibi, dist, angle, ibi, temp, d_temp, delta_xy[0],
-                 delta_xy[1], curr_pos[0], curr_pos[1], curr_angle])
+                    ###Check x-direction
+                    if bout_pos[-1][0] < 0:
+                        bout_pos[:, 0] = np.where(bout_pos[:, 0] < 0, 0, bout_pos[:, 0])
+                        bout_angle = np.where(bout_pos[:, 0] < 0, np.arctan2(bout_pos[-1][1] - curr_pos[1], 0), bout_angle)
+                    elif bout_pos[-1][0] > 320:
+                        bout_pos[:, 0] = np.where(bout_pos[:, 0] > 320, 320, bout_pos[:, 0])
+                        bout_angle = np.where(bout_pos[:, 0] > 320, np.arctan2(bout_pos[-1][1] - curr_pos[1], 0),
+                                              bout_angle)
 
-            curr_pos = bout_pos[-1]
-            curr_angle = bout_angle[0]
+                    grad_pos.append(bout_pos)
+                    grad_angle.append(bout_angle)
 
-            d_temp = PositionToTemp(Front, Back, curr_pos[1], start_pos=start_pos, end_pos=end_pos) - temp
+                    delta_xy = bout_pos[-1] - curr_pos
 
-            temp = PositionToTemp(Front, Back, curr_pos[1], start_pos=start_pos, end_pos=end_pos)
+                    df_elements.append(
+                        [next_bout.swim_mode, count, it, it + boutlen + ibi, dist, angle, ibi, temp, d_temp, delta_xy[0],
+                         delta_xy[1], curr_pos[0], curr_pos[1], curr_angle])
 
-            it = it + boutlen + ibi
+                    curr_pos = bout_pos[-1]
+                    curr_angle = bout_angle[0]
 
-        bout_dataframe[f"fishmodel_{Gradients[gr].name}"][num] = pd.DataFrame(df_elements,
-                                                                              columns=["State", "Original Index",
-                                                                                       "Start", "Stop",
-                                                                                       "Displacement",
-                                                                                       "Angle change", "IBI",
-                                                                                       "Temperature",
-                                                                                       "Prev Delta T", "Delta X",
-                                                                                       "Delta Y", "X Position",
-                                                                                       "Y Position",
-                                                                                       "Heading"])
+                    d_temp = PositionToTemp(Front, Back, curr_pos[1], start_pos=start_pos, end_pos=end_pos) - temp
 
-        print(gr, num)
-        Filt_vals[f"fishmodel_{Gradients[gr].name}"][num] = np.vstack(grad_pos)[12000:1000000]
-        tracked_angles[f"fishmodel_{Gradients[gr].name}"][num] = np.hstack(grad_angle)[12000:1000000]
+                    temp = PositionToTemp(Front, Back, curr_pos[1], start_pos=start_pos, end_pos=end_pos)
 
-        del obj
+                    it = it + boutlen + ibi
 
-pickle_file = open(f"3rdorderFish_model_{order}.fishexp", "wb")
-pickle.dump(Filt_vals, pickle_file)
-pickle.dump(tracked_angles, pickle_file)
-pickle_file.close()
+                bout_dataframe[f"fishmodel_{Gradients[gr].name}"][num] = pd.DataFrame(df_elements,
+                                                                                      columns=["State", "Original Index",
+                                                                                               "Start", "Stop",
+                                                                                               "Displacement",
+                                                                                               "Angle change", "IBI",
+                                                                                               "Temperature",
+                                                                                               "Prev Delta T", "Delta X",
+                                                                                               "Delta Y", "X Position",
+                                                                                               "Y Position",
+                                                                                               "Heading"])
 
-pickle_file = open(f"3rdorderFish_model_{order}_bouts.pkl", "wb")
-pickle.dump(bout_dataframe, pickle_file)
-pickle_file.close()
+                print(gr, num)
+                Filt_vals[f"fishmodel_{Gradients[gr].name}"][num] = np.vstack(grad_pos)[12000:1000000]
+                tracked_angles[f"fishmodel_{Gradients[gr].name}"][num] = np.hstack(grad_angle)[12000:1000000]
+
+                del obj
+        pickle_file = open(f"Fish_model_fullsim_{used_model}_250618.fishexp", "wb")
+        pickle.dump(Filt_vals, pickle_file)
+        pickle.dump(tracked_angles, pickle_file)
+        pickle_file.close()
+
+        pickle_file = open(f"Fish_model_fullsim_{used_model}_bouts_250618.pkl", "wb")
+        pickle.dump(bout_dataframe, pickle_file)
+        pickle_file.close()

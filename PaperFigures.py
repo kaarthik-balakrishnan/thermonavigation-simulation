@@ -2,12 +2,12 @@
 from mainfunctions import *
 import warnings
 
-# Press the green button in the gutter to run the sPcript.
+# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
 
     # Load constant temperature experiments
-    data_folder = "/Users/kaarthikbalakrishnan/Desktop/Research/BehaviorExperiments/ZebraTrack/KAB_Pickles/Constant/"
+    data_folder = "/Users/kaarthikbalakrishnan/Library/CloudStorage/OneDrive-TheOhioStateUniversity/Desktop/Research/BehaviorExperiments/ZebraTrack/Experiments/KAB_Pickles/Constant/"
     ConstantGroups = ["F34_B34","F32_B32","F30_B30","F28_B28","F26_B26","F24_B24","F22_B22","F20_B20","F18_B18","F16_B16"]
     bout_list = sorted([f for f in os.listdir(data_folder) if "bout.pkl" in f])
     file_list = sorted([f for f in os.listdir(data_folder) if "fish.pkl" in f])
@@ -43,7 +43,7 @@ if __name__ == '__main__':
 
     #Gradient Experiments
 
-    data_folder = "/Users/kaarthikbalakrishnan/Desktop/Research/BehaviorExperiments/ZebraTrack/KAB_Pickles/Gradient/"
+    data_folder = "/Users/kaarthikbalakrishnan/Library/CloudStorage/OneDrive-TheOhioStateUniversity/Desktop/Research/BehaviorExperiments/ZebraTrack/Experiments/KAB_Pickles/Gradient/"
     GradientGroups = ["F26_B18","F32_B24"]
     bout_list = sorted([f for f in os.listdir(data_folder) if "bout.pkl" in f])
     file_list = sorted([f for f in os.listdir(data_folder) if "fish.pkl" in f])
@@ -66,7 +66,7 @@ if __name__ == '__main__':
             data_file = path.join(data_folder, bf)
             with open(data_file, "rb") as myfile:
                 avgs = pickle.load(myfile)
-                bout_df[btemp][i] = avgs
+                bout_grad_df[btemp][i] = avgs
 
             data_file = path.join(data_folder, tf)
             with open(data_file, 'rb') as myfile:
@@ -261,21 +261,21 @@ if __name__ == '__main__':
 
     # Figure S5A Temperature stimulus presented to fish
 
-    fig, ax = pl.subplots()
-    monitor = np.loadtxt(
-        '/Users/kaarthikbalakrishnan/Library/CloudStorage/OneDrive-TheOhioStateUniversity/Desktop/Research/BehaviorExperiments/ZebraTrack/241106_Fish95_GCaMP_HB_6dpf_FlowExperiment_warner_temp_stim_Z_0.temp')
-    controller = np.loadtxt(
-        '/Users/kaarthikbalakrishnan/Library/CloudStorage/OneDrive-TheOhioStateUniversity/Desktop/Research/BehaviorExperiments/ZebraTrack/241106_Fish95_GCaMP_HB_6dpf_FlowExperiment_warner_temp_stim_Z_0.c_temp')
-    monitor_avg = [np.mean(monitor[i:i + 20]) for i in range(0, len(monitor), 20)]
-    controller_avg = [np.mean(controller[i:i + 20]) for i in range(0, len(controller), 20)]
-    ax.plot(monitor_avg, linestyle='-', color='orange', label="Monitor")
-    ax.plot(controller_avg, linestyle='--', color='k', alpha=0.5, label="Controller")
-    ax.axvline(720, linestyle='--', color='k')
-    pl.xticks(np.arange(0, 1081, 360))
-    pl.xlabel("Time [s]")
-    pl.ylabel("Temperature [C]")
-    pl.legend()
-    format_legend(ax)
-    remove_spines(ax)
-    #pl.savefig("Temperature_stim.pdf", transparent=True, format="pdf", bbox_inches="tight")
+    # fig, ax = pl.subplots()
+    # monitor = np.loadtxt(
+    #     '/Users/kaarthikbalakrishnan/Library/CloudStorage/OneDrive-TheOhioStateUniversity/Desktop/Research/BehaviorExperiments/ZebraTrack/241106_Fish95_GCaMP_HB_6dpf_FlowExperiment_warner_temp_stim_Z_0.temp')
+    # controller = np.loadtxt(
+    #     '/Users/kaarthikbalakrishnan/Library/CloudStorage/OneDrive-TheOhioStateUniversity/Desktop/Research/BehaviorExperiments/ZebraTrack/241106_Fish95_GCaMP_HB_6dpf_FlowExperiment_warner_temp_stim_Z_0.c_temp')
+    # monitor_avg = [np.mean(monitor[i:i + 20]) for i in range(0, len(monitor), 20)]
+    # controller_avg = [np.mean(controller[i:i + 20]) for i in range(0, len(controller), 20)]
+    # ax.plot(monitor_avg, linestyle='-', color='orange', label="Monitor")
+    # ax.plot(controller_avg, linestyle='--', color='k', alpha=0.5, label="Controller")
+    # ax.axvline(720, linestyle='--', color='k')
+    # pl.xticks(np.arange(0, 1081, 360))
+    # pl.xlabel("Time [s]")
+    # pl.ylabel("Temperature [C]")
+    # pl.legend()
+    # format_legend(ax)
+    # remove_spines(ax)
+    # #pl.savefig("Temperature_stim.pdf", transparent=True, format="pdf", bbox_inches="tight")
 
